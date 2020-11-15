@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  site:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - XDEBUG_CONFIG='remote_autostart=1'
+      - PHP_IDE_CONFIG='serverName=site'
+    command: php artisan serve --host=site
+    ports:
+      - "8080:8000"
+    volumes:
+      - ./xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+      - ./site:/app
+    depends_on:
+      - weather_history
+  weather_history:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - XDEBUG_CONFIG='remote_autostart=1'
+      - PHP_IDE_CONFIG='serverName=weather_history'
+    command: php artisan serve --host=weather_history
+    volumes:
+      - ./xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+      - ./weather_history:/app
+    depends_on:
+      - db
+  db:
+    image: mysql:5.5
+    ports:
+      - "3306:3306"
+    restart: always
+    environment:
+      MYSQL_DATABASE: app
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_ROOT_PASSWORD: ''
